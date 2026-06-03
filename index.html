@@ -196,7 +196,7 @@
 <body>
 
 <header>
-  <h1>St. Louis City Eviction Representation Dashboard</h1>
+  <h1>St. Louis City Eviction Representation Dashboard, 2023-2025</h1>
   <p>
     Tracking tenant and landlord legal representation in eviction cases across
     St. Louis City census block groups, before and after the launch of the
@@ -224,7 +224,7 @@
       <tbody id="summary-body"></tbody>
     </table>
     <p style="font-size:0.78rem;color:#999;margin-top:0.75rem;">
-      pp = percentage points. Data: Missouri eCourts EIMO, 2023–2025.
+      pp = percentage points. Data source: Missouri Courts.
     </p>
   </div>
 
@@ -250,7 +250,7 @@
 
   <!-- Map -->
   <div class="card">
-    <h2>Tenant Representation Rate by Neighborhood (Census Block Group)</h2>
+    <h2>Tenant Representation Rate by Neighborhood</h2>
     <div class="map-controls">
       <label>Show period:</label>
       <button class="toggle-btn active" id="btn-pre"  onclick="setMapPeriod('pre')">Before RTC (pre–Aug 2024)</button>
@@ -272,7 +272,7 @@
       </span>
     </div>
     <p style="font-size:0.78rem;color:#999;margin-top:0.6rem;">
-      Click a block group to see details. Block groups with fewer than 5 total
+      Click a neighborhood to see details. Neighborhoods with fewer than 5 total
       filings are shown but rates should be interpreted cautiously.
     </p>
   </div>
@@ -336,7 +336,7 @@ function onEachFeature(feature, layer) {
       L.popup()
         .setLatLng(e.latlng)
         .setContent(`
-          <strong>Block Group ${p.GEOID}</strong><br>
+          <strong>${p.NHD_NAME}</strong><br>
           <table style="font-size:0.85rem;margin-top:0.4rem;border-collapse:collapse;">
             <tr><td style="padding:2px 8px 2px 0;color:#555;">Before RTC</td>
                 <td style="padding:2px 0;font-weight:600;">${pre}</td>
@@ -368,7 +368,7 @@ window.setMapPeriod = function(period) {
 };
 
 // Load GeoJSON
-fetch("data/stl_bg_representation.geojson")
+fetch("data/stl_nhd_representation.geojson")
   .then(r => r.json())
   .then(data => {
     geojsonData = data;
