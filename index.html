@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>St. Louis City Eviction Representation Dashboard</title>
 
+  <!-- Google Fonts: Lora (serif, ~Abril Text) + Libre Franklin (sans, ~Franklin Gothic) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;600;700&family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet" />
+
   <!-- Leaflet -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -19,88 +24,112 @@
     /* ── Reset & base ── */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-      background: #f4f6f9;
-      color: #222;
-      line-height: 1.55;
+      font-family: "Libre Franklin", Verdana, Geneva, sans-serif;
+      background: #fff;
+      color: #2a2a2a;
+      line-height: 1.6;
+      font-size: 16px;
     }
 
     /* ── Header ── */
     header {
-      background: #1a3a5c;
-      color: #fff;
-      padding: 2rem 2rem 1.5rem;
+      background: #fff;
+      border-bottom: 3px solid #2a2a2a;
+      padding: 2.5rem 2rem 1.75rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .header-eyebrow {
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #346ead;
+      margin-bottom: 0.6rem;
     }
     header h1 {
-      font-size: 1.7rem;
+      font-family: "Lora", Georgia, serif;
+      font-size: 2rem;
       font-weight: 700;
-      margin-bottom: 0.4rem;
+      color: #2a2a2a;
+      line-height: 1.25;
+      margin-bottom: 0.75rem;
+      max-width: 760px;
     }
     header p {
+      font-family: "Libre Franklin", sans-serif;
       font-size: 0.95rem;
-      opacity: 0.85;
-      max-width: 780px;
+      color: #555;
+      max-width: 720px;
+      line-height: 1.6;
     }
     .rtc-badge {
       display: inline-block;
-      margin-top: 0.75rem;
-      background: #e8534a;
-      color: #fff;
-      font-size: 0.8rem;
-      font-weight: 600;
-      padding: 0.25rem 0.75rem;
-      border-radius: 20px;
-      letter-spacing: 0.03em;
+      margin-top: 1rem;
+      border: 1.5px solid #2a2a2a;
+      color: #2a2a2a;
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 0.25rem 0.7rem;
     }
 
     /* ── Layout ── */
     main {
       max-width: 1100px;
       margin: 0 auto;
-      padding: 2rem 1.5rem 3rem;
+      padding: 2.5rem 2rem 4rem;
       display: flex;
       flex-direction: column;
-      gap: 2.5rem;
+      gap: 0;
     }
 
-    /* ── Section cards ── */
+    /* ── Sections (no cards — Pew uses open layout with dividers) ── */
     .card {
       background: #fff;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-      padding: 1.5rem 1.75rem;
+      padding: 2rem 0;
+      border-bottom: 1px solid #dadbdb;
     }
+    .card:last-child { border-bottom: none; }
     .card h2 {
-      font-size: 1.15rem;
+      font-family: "Lora", Georgia, serif;
+      font-size: 1.25rem;
       font-weight: 700;
-      color: #1a3a5c;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 2px solid #e8ecf2;
+      color: #2a2a2a;
+      margin-bottom: 1.25rem;
     }
 
     /* ── Summary table ── */
     .summary-table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 0.92rem;
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.9rem;
     }
     .summary-table th {
-      background: #1a3a5c;
-      color: #fff;
-      padding: 0.6rem 0.9rem;
+      background: #fff;
+      color: #2a2a2a;
+      padding: 0.55rem 0.9rem;
       text-align: left;
-      font-weight: 600;
+      font-weight: 700;
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-top: 2px solid #2a2a2a;
+      border-bottom: 1px solid #dadbdb;
     }
     .summary-table td {
-      padding: 0.6rem 0.9rem;
-      border-bottom: 1px solid #e8ecf2;
+      padding: 0.65rem 0.9rem;
+      border-bottom: 1px solid #dadbdb;
+      color: #2a2a2a;
     }
-    .summary-table tr:last-child td { border-bottom: none; }
-    .summary-table tr:nth-child(even) td { background: #f7f9fc; }
-    .highlight { color: #1a3a5c; font-weight: 700; }
-    .up   { color: #2e7d32; font-weight: 700; }
-    .down { color: #c62828; font-weight: 700; }
+    .summary-table tr:last-child td { border-bottom: 2px solid #2a2a2a; }
+    .highlight { color: #2a2a2a; font-weight: 700; }
+    .up   { color: #006d2c; font-weight: 700; }
+    .down { color: #346ead; font-weight: 700; }
 
     /* ── Charts ── */
     .chart-wrap {
@@ -111,34 +140,37 @@
     /* ── Map ── */
     #map {
       height: 520px;
-      border-radius: 8px;
-      border: 1px solid #dde2ea;
+      border: 1px solid #dadbdb;
     }
     .map-controls {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      margin-bottom: 0.9rem;
+      margin-bottom: 1rem;
       flex-wrap: wrap;
     }
     .map-controls label {
-      font-weight: 600;
-      font-size: 0.9rem;
-      color: #1a3a5c;
+      font-family: "Libre Franklin", sans-serif;
+      font-weight: 700;
+      font-size: 0.82rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: #2a2a2a;
     }
     .toggle-btn {
-      padding: 0.4rem 1.1rem;
-      border: 2px solid #1a3a5c;
-      border-radius: 20px;
+      padding: 0.35rem 1rem;
+      border: 1.5px solid #2a2a2a;
+      border-radius: 0;
       background: #fff;
-      color: #1a3a5c;
-      font-size: 0.85rem;
+      color: #2a2a2a;
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.82rem;
       font-weight: 600;
       cursor: pointer;
       transition: background 0.15s, color 0.15s;
     }
     .toggle-btn.active {
-      background: #1a3a5c;
+      background: #2a2a2a;
       color: #fff;
     }
     .map-legend {
@@ -146,7 +178,8 @@
       align-items: center;
       gap: 0.4rem;
       margin-top: 0.75rem;
-      font-size: 0.82rem;
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.8rem;
       flex-wrap: wrap;
     }
     .legend-label { color: #555; }
@@ -154,7 +187,6 @@
       display: inline-block;
       width: 22px;
       height: 12px;
-      border-radius: 2px;
     }
     .legend-nodata {
       display: inline-flex;
@@ -166,37 +198,44 @@
 
     /* ── RTC note ── */
     .rtc-note {
-      font-size: 0.82rem;
-      color: #666;
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.8rem;
+      color: #777;
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      margin-top: 0.5rem;
+      margin-top: 0.6rem;
     }
     .rtc-line {
       display: inline-block;
       width: 28px;
       height: 2px;
       background: repeating-linear-gradient(
-        to right, #e8534a 0px, #e8534a 5px, transparent 5px, transparent 9px
+        to right, #555 0px, #555 5px, transparent 5px, transparent 9px
       );
       vertical-align: middle;
     }
 
     /* ── Footer ── */
     footer {
-      text-align: center;
-      font-size: 0.8rem;
-      color: #888;
-      padding: 1.5rem;
+      border-top: 1px solid #dadbdb;
+      text-align: left;
+      font-family: "Libre Franklin", sans-serif;
+      font-size: 0.78rem;
+      color: #777;
+      padding: 1.5rem 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
     }
-    footer a { color: #1a3a5c; }
+    footer a { color: #346ead; text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
 <header>
-  <h1>St. Louis City Eviction Representation Dashboard, 2023-2025</h1>
+  <div class="header-eyebrow">Housing Policy · St. Louis City</div>
+  <h1>St. Louis City Eviction Representation Dashboard, 2023–2025</h1>
   <p>
     Tracking tenant and landlord legal representation in eviction cases across
     St. Louis City census block groups, before and after the launch of the
@@ -430,7 +469,7 @@ Papa.parse("data/stlrtc_monthly.csv", {
         datasets: [{
           label: "Eviction filings",
           data: total,
-          backgroundColor: "#4472C4",
+          backgroundColor: "#66c2a4",
           borderRadius: 3,
         }],
       },
@@ -467,8 +506,8 @@ Papa.parse("data/stlrtc_monthly.csv", {
           {
             label: "Tenant has a lawyer",
             data: pctTenant,
-            borderColor: "#ED7D31",
-            backgroundColor: "rgba(237,125,49,0.12)",
+            borderColor: "#2ca25f",
+            backgroundColor: "rgba(44,162,95,0.12)",
             borderWidth: 2.5,
             pointRadius: 3,
             tension: 0.3,
@@ -477,8 +516,8 @@ Papa.parse("data/stlrtc_monthly.csv", {
           {
             label: "Landlord has a lawyer",
             data: pctLandlord,
-            borderColor: "#4472C4",
-            backgroundColor: "rgba(68,114,196,0.08)",
+            borderColor: "#b2e2e2",
+            backgroundColor: "rgba(178,226,226,0.2)",
             borderWidth: 2.5,
             pointRadius: 3,
             tension: 0.3,
