@@ -259,11 +259,11 @@
     <div id="map"></div>
     <!-- Color legend -->
     <div class="map-legend">
-      <span class="legend-swatch" style="background:#ffffb2;"></span><span class="legend-label">0–5%</span>
-      <span class="legend-swatch" style="background:#fecc5c;margin-left:0.5rem;"></span><span class="legend-label">5–10%</span>
-      <span class="legend-swatch" style="background:#fd8d3c;margin-left:0.5rem;"></span><span class="legend-label">10–15%</span>
-      <span class="legend-swatch" style="background:#f03b20;margin-left:0.5rem;"></span><span class="legend-label">15–20%</span>
-      <span class="legend-swatch" style="background:#bd0026;margin-left:0.5rem;"></span><span class="legend-label">20%+</span>
+      <span class="legend-swatch" style="background:#edf8fb;"></span><span class="legend-label">0–5%</span>
+      <span class="legend-swatch" style="background:#b2e2e2;margin-left:0.5rem;"></span><span class="legend-label">5–10%</span>
+      <span class="legend-swatch" style="background:#66c2a4;margin-left:0.5rem;"></span><span class="legend-label">10–15%</span>
+      <span class="legend-swatch" style="background:#2ca25f;margin-left:0.5rem;"></span><span class="legend-label">15–20%</span>
+      <span class="legend-swatch" style="background:#006d2c;margin-left:0.5rem;"></span><span class="legend-label">20%+</span>
       <span class="legend-nodata">
         <span class="legend-swatch" style="background:#d0d0d0;"></span>
         No eviction filings
@@ -287,7 +287,7 @@ const RTC_MONTH = "2024-08";   // first month of RTC program
 
 // ── Color scale: 0–5%, 5–10%, 10–15%, 15–20%, 20%+ ──────────────────────────
 const COLOR_BREAKS  = [0, 5, 10, 15, 20];          // lower bound of each class
-const COLORS        = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
+const COLORS        = ["#edf8fb", "#b2e2e2", "#66c2a4", "#2ca25f", "#006d2c"];
 const LEGEND_LABELS = ["0–5%", "5–10%", "10–15%", "15–20%", "20%+"];
 
 function getColor(pct) {
