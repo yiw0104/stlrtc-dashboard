@@ -259,13 +259,11 @@
     <div id="map"></div>
     <!-- Color legend -->
     <div class="map-legend">
-      <span class="legend-label">0%</span>
-      <span class="legend-swatch" style="background:#ffffb2;"></span>
-      <span class="legend-swatch" style="background:#fecc5c;"></span>
-      <span class="legend-swatch" style="background:#fd8d3c;"></span>
-      <span class="legend-swatch" style="background:#f03b20;"></span>
-      <span class="legend-swatch" style="background:#bd0026;"></span>
-      <span class="legend-label">100%</span>
+      <span class="legend-swatch" style="background:#ffffb2;"></span><span class="legend-label">0–5%</span>
+      <span class="legend-swatch" style="background:#fecc5c;margin-left:0.5rem;"></span><span class="legend-label">5–10%</span>
+      <span class="legend-swatch" style="background:#fd8d3c;margin-left:0.5rem;"></span><span class="legend-label">10–15%</span>
+      <span class="legend-swatch" style="background:#f03b20;margin-left:0.5rem;"></span><span class="legend-label">15–20%</span>
+      <span class="legend-swatch" style="background:#bd0026;margin-left:0.5rem;"></span><span class="legend-label">20%+</span>
       <span class="legend-nodata">
         <span class="legend-swatch" style="background:#d0d0d0;"></span>
         No eviction filings
@@ -280,23 +278,24 @@
 </main>
 
 <footer>
-  Question? Feel free to contact me at: yiw1@wustl.edu
+  
 </footer>
 
 <script>
 // ── Constants ────────────────────────────────────────────────────────────────
 const RTC_MONTH = "2024-08";   // first month of RTC program
 
-// ── Color scale (YlOrRd 5-class) ─────────────────────────────────────────────
-const COLOR_BREAKS = [0, 20, 40, 60, 80, 100];
-const COLORS       = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
+// ── Color scale: 0–5%, 5–10%, 10–15%, 15–20%, 20%+ ──────────────────────────
+const COLOR_BREAKS  = [0, 5, 10, 15, 20];          // lower bound of each class
+const COLORS        = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
+const LEGEND_LABELS = ["0–5%", "5–10%", "10–15%", "15–20%", "20%+"];
 
 function getColor(pct) {
   if (pct === null || pct === undefined || isNaN(pct)) return "#d0d0d0";
-  for (let i = 0; i < COLOR_BREAKS.length - 1; i++) {
-    if (pct <= COLOR_BREAKS[i + 1]) return COLORS[i];
+  for (let i = COLOR_BREAKS.length - 1; i >= 0; i--) {
+    if (pct >= COLOR_BREAKS[i]) return COLORS[i];
   }
-  return COLORS[COLORS.length - 1];
+  return COLORS[0];
 }
 
 // ── Leaflet map setup ─────────────────────────────────────────────────────────
