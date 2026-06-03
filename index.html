@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>St. Louis City Eviction Representation Dashboard</title>
+
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <!-- Chart.js annotation plugin (RTC launch line) -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+  <!-- Papa Parse (CSV loading) -->
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <style>
+    /* ── Reset & base ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: #f4f6f9;
+      color: #222;
+      line-height: 1.55;
+    }
+
+    /* ── Header ── */
+    header {
+      background: #1a3a5c;
+      color: #fff;
+      padding: 2rem 2rem 1.5rem;
+    }
+    header h1 {
+      font-size: 1.7rem;
+      font-weight: 700;
+      margin-bottom: 0.4rem;
+    }
+    header p {
+      font-size: 0.95rem;
+      opacity: 0.85;
+      max-width: 780px;
+    }
+    .rtc-badge {
+      display: inline-block;
+      margin-top: 0.75rem;
+      background: #e8534a;
+      color: #fff;
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      letter-spacing: 0.03em;
+    }
+
+    /* ── Layout ── */
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 2.5rem;
+    }
+
+    /* ── Section cards ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      padding: 1.5rem 1.75rem;
+    }
+    .card h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1a3a5c;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 2px solid #e8ecf2;
+    }
+
+    /* ── Summary table ── */
+    .summary-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.92rem;
+    }
+    .summary-table th {
+      background: #1a3a5c;
+      color: #fff;
+      padding: 0.6rem 0.9rem;
+      text-align: left;
+      font-weight: 600;
+    }
+    .summary-table td {
+      padding: 0.6rem 0.9rem;
+      border-bottom: 1px solid #e8ecf2;
+    }
+    .summary-table tr:last-child td { border-bottom: none; }
+    .summary-table tr:nth-child(even) td { background: #f7f9fc; }
+    .highlight { color: #1a3a5c; font-weight: 700; }
+    .up   { color: #2e7d32; font-weight: 700; }
+    .down { color: #c62828; font-weight: 700; }
+
+    /* ── Charts ── */
+    .chart-wrap {
+      position: relative;
+      height: 280px;
+    }
+
+    /* ── Map ── */
+    #map {
+      height: 520px;
+      border-radius: 8px;
+      border: 1px solid #dde2ea;
+    }
+    .map-controls {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 0.9rem;
+      flex-wrap: wrap;
+    }
+    .map-controls label {
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: #1a3a5c;
+    }
+    .toggle-btn {
+      padding: 0.4rem 1.1rem;
+      border: 2px solid #1a3a5c;
+      border-radius: 20px;
+      background: #fff;
+      color: #1a3a5c;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+    .toggle-btn.active {
+      background: #1a3a5c;
+      color: #fff;
+    }
+    .map-legend {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.75rem;
+      font-size: 0.82rem;
+      flex-wrap: wrap;
+    }
+    .legend-label { color: #555; }
+    .legend-swatch {
+      display: inline-block;
+      width: 22px;
+      height: 12px;
+      border-radius: 2px;
+    }
+    .legend-nodata {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-left: 0.75rem;
+      color: #777;
+    }
+
+    /* ── RTC note ── */
+    .rtc-note {
+      font-size: 0.82rem;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+    }
+    .rtc-line {
+      display: inline-block;
+      width: 28px;
+      height: 2px;
+      background: repeating-linear-gradient(
+        to right, #e8534a 0px, #e8534a 5px, transparent 5px, transparent 9px
+      );
+      vertical-align: middle;
+    }
+
+    /* ── Footer ── */
+    footer {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #888;
+      padding: 1.5rem;
+    }
+    footer a { color: #1a3a5c; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>St. Louis City Eviction Representation Dashboard</h1>
+  <p>
+    Tracking tenant and landlord legal representation in eviction cases across
+    St. Louis City census block groups, before and after the launch of the
+    <strong>Tenant Right to Counsel (RTC) Program</strong>.
+  </p>
+  <span class="rtc-badge">RTC Program launched August 2024</span>
+</header>
+
+<main>
+
+  <!-- Summary table -->
+  <div class="card">
+    <h2>Before vs. After the RTC Program</h2>
+    <div id="summary-loading" style="color:#888;font-size:0.9rem;">Loading…</div>
+    <table class="summary-table" id="summary-table" style="display:none;">
+      <thead>
+        <tr>
+          <th>Period</th>
+          <th>Total Filings</th>
+          <th>Tenant Has a Lawyer</th>
+          <th>Landlord Has a Lawyer</th>
+          <th>Representation Gap<br><small style="font-weight:400;">(landlord − tenant)</small></th>
+        </tr>
+      </thead>
+      <tbody id="summary-body"></tbody>
+    </table>
+    <p style="font-size:0.78rem;color:#999;margin-top:0.75rem;">
+      pp = percentage points. Data: Missouri eCourts EIMO, 2023–2025.
+    </p>
+  </div>
+
+  <!-- Chart 1: Monthly filings -->
+  <div class="card">
+    <h2>Monthly Eviction Filings — St. Louis City</h2>
+    <div class="chart-wrap"><canvas id="chart-filings"></canvas></div>
+    <div class="rtc-note">
+      <span class="rtc-line"></span>
+      RTC Program starts August 2024
+    </div>
+  </div>
+
+  <!-- Chart 2: % represented -->
+  <div class="card">
+    <h2>% of Eviction Cases with Legal Representation</h2>
+    <div class="chart-wrap"><canvas id="chart-pct"></canvas></div>
+    <div class="rtc-note">
+      <span class="rtc-line"></span>
+      RTC Program starts August 2024
+    </div>
+  </div>
+
+  <!-- Map -->
+  <div class="card">
+    <h2>Tenant Representation Rate by Neighborhood (Census Block Group)</h2>
+    <div class="map-controls">
+      <label>Show period:</label>
+      <button class="toggle-btn active" id="btn-pre"  onclick="setMapPeriod('pre')">Before RTC (pre–Aug 2024)</button>
+      <button class="toggle-btn"        id="btn-post" onclick="setMapPeriod('post')">After RTC (Aug 2024+)</button>
+    </div>
+    <div id="map"></div>
+    <!-- Color legend -->
+    <div class="map-legend">
+      <span class="legend-label">0%</span>
+      <span class="legend-swatch" style="background:#ffffb2;"></span>
+      <span class="legend-swatch" style="background:#fecc5c;"></span>
+      <span class="legend-swatch" style="background:#fd8d3c;"></span>
+      <span class="legend-swatch" style="background:#f03b20;"></span>
+      <span class="legend-swatch" style="background:#bd0026;"></span>
+      <span class="legend-label">100%</span>
+      <span class="legend-nodata">
+        <span class="legend-swatch" style="background:#d0d0d0;"></span>
+        No eviction filings
+      </span>
+    </div>
+    <p style="font-size:0.78rem;color:#999;margin-top:0.6rem;">
+      Click a block group to see details. Block groups with fewer than 5 total
+      filings are shown but rates should be interpreted cautiously.
+    </p>
+  </div>
+
+</main>
+
+<footer>
+  Data: Missouri eCourts EIMO · Geography: U.S. Census 2020 TIGER/Line block groups ·
+  Analysis: <a href="stlrtc_analysis.ipynb">stlrtc_analysis.ipynb</a>
+</footer>
+
+<script>
+// ── Constants ────────────────────────────────────────────────────────────────
+const RTC_MONTH = "2024-08";   // first month of RTC program
+
+// ── Color scale (YlOrRd 5-class) ─────────────────────────────────────────────
+const COLOR_BREAKS = [0, 20, 40, 60, 80, 100];
+const COLORS       = ["#ffffb2", "#fecc5c", "#fd8d3c", "#f03b20", "#bd0026"];
+
+function getColor(pct) {
+  if (pct === null || pct === undefined || isNaN(pct)) return "#d0d0d0";
+  for (let i = 0; i < COLOR_BREAKS.length - 1; i++) {
+    if (pct <= COLOR_BREAKS[i + 1]) return COLORS[i];
+  }
+  return COLORS[COLORS.length - 1];
+}
+
+// ── Leaflet map setup ─────────────────────────────────────────────────────────
+const map = L.map("map", { zoomControl: true }).setView([38.627, -90.199], 11);
+
+L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/">CARTO</a>',
+  maxZoom: 19,
+}).addTo(map);
+
+let geojsonLayer = null;
+let geojsonData  = null;
+let currentPeriod = "pre";
+
+function styleFeature(feature) {
+  const props = feature.properties;
+  const pct = currentPeriod === "pre"
+    ? props.pct_tenant_lawyer_pre
+    : props.pct_tenant_lawyer_post;
+  return {
+    fillColor: getColor(pct),
+    fillOpacity: 0.8,
+    color: "#fff",
+    weight: 0.6,
+  };
+}
+
+function onEachFeature(feature, layer) {
+  layer.on({
+    mouseover(e) { e.target.setStyle({ weight: 2, color: "#333" }); },
+    mouseout(e)  { geojsonLayer.resetStyle(e.target); },
+    click(e) {
+      const p = feature.properties;
+      const pre  = p.pct_tenant_lawyer_pre  != null ? p.pct_tenant_lawyer_pre  + "%" : "No data";
+      const post = p.pct_tenant_lawyer_post != null ? p.pct_tenant_lawyer_post + "%" : "No data";
+      L.popup()
+        .setLatLng(e.latlng)
+        .setContent(`
+          <strong>Block Group ${p.GEOID}</strong><br>
+          <table style="font-size:0.85rem;margin-top:0.4rem;border-collapse:collapse;">
+            <tr><td style="padding:2px 8px 2px 0;color:#555;">Before RTC</td>
+                <td style="padding:2px 0;font-weight:600;">${pre}</td>
+                <td style="padding:2px 0 2px 8px;color:#888;font-size:0.78rem;">(${p.total_filings_pre} filings)</td></tr>
+            <tr><td style="padding:2px 8px 2px 0;color:#555;">After RTC</td>
+                <td style="padding:2px 0;font-weight:600;">${post}</td>
+                <td style="padding:2px 0 2px 8px;color:#888;font-size:0.78rem;">(${p.total_filings_post} filings)</td></tr>
+          </table>
+          <span style="font-size:0.75rem;color:#999;">% of eviction cases where tenant has a lawyer</span>
+        `)
+        .openOn(map);
+    },
+  });
+}
+
+function renderMap() {
+  if (geojsonLayer) { geojsonLayer.remove(); }
+  geojsonLayer = L.geoJSON(geojsonData, {
+    style: styleFeature,
+    onEachFeature,
+  }).addTo(map);
+}
+
+window.setMapPeriod = function(period) {
+  currentPeriod = period;
+  document.getElementById("btn-pre").classList.toggle("active",  period === "pre");
+  document.getElementById("btn-post").classList.toggle("active", period === "post");
+  renderMap();
+};
+
+// Load GeoJSON
+fetch("data/stl_bg_representation.geojson")
+  .then(r => r.json())
+  .then(data => {
+    geojsonData = data;
+    renderMap();
+  })
+  .catch(err => console.error("GeoJSON load error:", err));
+
+// ── Charts (monthly CSV) ──────────────────────────────────────────────────────
+Papa.parse("data/stlrtc_monthly.csv", {
+  download: true,
+  header: true,
+  dynamicTyping: true,
+  complete({ data }) {
+    data = data.filter(r => r.year_month);
+    const labels   = data.map(r => r.year_month);
+    const total    = data.map(r => r.total_filings);
+    const pctTenant = data.map(r => r.pct_d_lawyer);
+    const pctLandlord = data.map(r => r.pct_p_lawyer);
+
+    const rtcIndex = labels.indexOf(RTC_MONTH);
+
+    const rtcAnnotation = {
+      type: "line",
+      xMin: RTC_MONTH,
+      xMax: RTC_MONTH,
+      borderColor: "#e8534a",
+      borderWidth: 2,
+      borderDash: [6, 4],
+      label: {
+        display: true,
+        content: "RTC starts",
+        position: "start",
+        color: "#e8534a",
+        font: { size: 11, weight: "bold" },
+        backgroundColor: "rgba(255,255,255,0.8)",
+        padding: 4,
+      },
+    };
+
+    const commonScales = {
+      x: {
+        ticks: {
+          maxTicksLimit: 12,
+          font: { size: 11 },
+          callback(val, i) {
+            const [y, m] = labels[i].split("-");
+            const mo = ["Jan","Feb","Mar","Apr","May","Jun",
+                        "Jul","Aug","Sep","Oct","Nov","Dec"][+m - 1];
+            return mo === "Jan" ? `${mo}\n${y}` : mo;
+          },
+        },
+        grid: { display: false },
+      },
+    };
+
+    // Chart 1 — filing counts
+    new Chart(document.getElementById("chart-filings"), {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [{
+          label: "Eviction filings",
+          data: total,
+          backgroundColor: "#4472C4",
+          borderRadius: 3,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              title: t => t[0].label,
+              label: t => ` ${t.raw.toLocaleString()} filings`,
+            },
+          },
+          annotation: { annotations: { rtc: rtcAnnotation } },
+        },
+        scales: {
+          ...commonScales,
+          y: {
+            beginAtZero: true,
+            ticks: { font: { size: 11 } },
+            title: { display: true, text: "Filings", font: { size: 11 } },
+          },
+        },
+      },
+    });
+
+    // Chart 2 — % represented
+    new Chart(document.getElementById("chart-pct"), {
+      type: "line",
+      data: {
+        labels,
+        datasets: [
+          {
+            label: "Tenant has a lawyer",
+            data: pctTenant,
+            borderColor: "#ED7D31",
+            backgroundColor: "rgba(237,125,49,0.12)",
+            borderWidth: 2.5,
+            pointRadius: 3,
+            tension: 0.3,
+            fill: false,
+          },
+          {
+            label: "Landlord has a lawyer",
+            data: pctLandlord,
+            borderColor: "#4472C4",
+            backgroundColor: "rgba(68,114,196,0.08)",
+            borderWidth: 2.5,
+            pointRadius: 3,
+            tension: 0.3,
+            fill: false,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: "top",
+            labels: { font: { size: 12 }, boxWidth: 16 },
+          },
+          tooltip: {
+            callbacks: {
+              title: t => t[0].label,
+              label: t => ` ${t.dataset.label}: ${t.raw}%`,
+            },
+          },
+          annotation: { annotations: { rtc: rtcAnnotation } },
+        },
+        scales: {
+          ...commonScales,
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              font: { size: 11 },
+              callback: v => v + "%",
+            },
+            title: { display: true, text: "% of filings", font: { size: 11 } },
+          },
+        },
+      },
+    });
+  },
+});
+
+// ── Summary table (pre/post CSV) ──────────────────────────────────────────────
+Papa.parse("data/stlrtc_prepost_summary.csv", {
+  download: true,
+  header: true,
+  complete({ data }) {
+    data = data.filter(r => r.Period);
+    const tbody = document.getElementById("summary-body");
+
+    data.forEach((row, i) => {
+      const isPost = i === 1;
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td><strong>${row.Period}</strong></td>
+        <td>${row["Total Filings"]}</td>
+        <td class="${isPost ? "up" : ""}">${row["Tenant w/ Lawyer"]}</td>
+        <td>${row["Landlord w/ Lawyer"]}</td>
+        <td class="${isPost ? "down" : ""}">${row["Representation Gap\n(landlord − tenant)"] || row["Representation Gap (landlord ? tenant)"] || "—"}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    document.getElementById("summary-loading").style.display = "none";
+    document.getElementById("summary-table").style.display   = "table";
+  },
+});
+</script>
+</body>
+</html>
